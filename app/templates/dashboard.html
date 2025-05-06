@@ -1,14 +1,26 @@
-{% extends 'base.html' %}
-{% block content %}
 <h2>Welcome, {{ current_user.username }}!</h2>
-<form method="POST">
+
+<form method="post" action="{{ url_for('main.add_task') }}">
     <input type="text" name="content" placeholder="New Task" required>
-    <input type="submit" value="Add Task">
+    <button type="submit">Add Task</button>
 </form>
+
 <ul>
-    {% for task in tasks %}
-        <li>{{ task.content }}</li>
-    {% endfor %}
+{% for task in tasks %}
+    <li>
+        {% if task.completed %}
+            <s>{{ task.content }}</s>
+        {% else %}
+            {{ task.content }}
+        {% endif %}
+
+        <form method="post" action="{{ url_for('main.toggle_task', task_id=task.id) }}" style="display:inline;">
+            <button type="submit">✅</button>
+        </form>
+
+        <form method="post" action="{{ url_for('main.delete_task', task_id=task.id) }}" style="display:inline;">
+            <button type="submit">🗑</button>
+        </form>
+    </li>
+{% endfor %}
 </ul>
-<a href="{{ url_for('main.logout') }}">Logout</a>
-{% endblock %}
