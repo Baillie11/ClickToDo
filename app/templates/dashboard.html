@@ -2,7 +2,7 @@
 {% block content %}
 <a href="{{ url_for('main.logout') }}" class="btn btn-outline-secondary btn-sm float-end mb-3">Logout</a>
 
-<h2 class="mb-4">Welcome, {{ current_user.username }}!</h2>
+<h2 class="mb-4">Welcome, {{ current_user.full_name }}!</h2>
 
 <form method="POST" action="{{ url_for('main.add_task') }}" class="input-group mb-3">
     <input type="text" name="content" class="form-control" placeholder="Add a new task" required>

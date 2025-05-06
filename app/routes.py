@@ -6,6 +6,8 @@ from flask import Blueprint
 from flask_login import login_user, logout_user
 from app.models import User
 from werkzeug.security import check_password_hash
+from flask import flash
+
 
 
 main = Blueprint('main', __name__)
@@ -17,37 +19,40 @@ def home():
 @main.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        username = request.form.get('username')
+        email = request.form.get('email')
         password = request.form.get('password')
+        user = User.query.filter_by(email=email).first()
 
-        user = User.query.filter_by(username=username).first()
         if user and user.check_password(password):
             login_user(user)
             return redirect(url_for('main.dashboard'))
         else:
-            return 'Invalid username or password'
+            flash('Invalid email or password.')
 
     return render_template('login.html')
+
 
 
 @main.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
-        username = request.form.get('username')
+        full_name = request.form.get('full_name')
+        email = request.form.get('email')
         password = request.form.get('password')
 
-        if User.query.filter_by(username=username).first():
-            return 'Username already exists'
+        if User.query.filter_by(email=email).first():
+            flash('Email already registered.')
+            return redirect(url_for('main.register'))
 
-        new_user = User(username=username)
+        new_user = User(full_name=full_name, email=email)
         new_user.set_password(password)
         db.session.add(new_user)
         db.session.commit()
-
-        login_user(new_user)
-        return redirect(url_for('main.dashboard'))
+        flash('Account created. Please log in.')
+        return redirect(url_for('main.login'))
 
     return render_template('register.html')
+
 
 
 @main.route('/logout')
