@@ -1,26 +1,35 @@
-<h2>Welcome, {{ current_user.username }}!</h2>
+{% extends "base.html" %}
+{% block content %}
+<a href="{{ url_for('main.logout') }}" class="btn btn-outline-secondary btn-sm float-end mb-3">Logout</a>
 
-<form method="post" action="{{ url_for('main.add_task') }}">
-    <input type="text" name="content" placeholder="New Task" required>
-    <button type="submit">Add Task</button>
+<h2 class="mb-4">Welcome, {{ current_user.username }}!</h2>
+
+<form method="POST" action="{{ url_for('main.add_task') }}" class="input-group mb-3">
+    <input type="text" name="content" class="form-control" placeholder="Add a new task" required>
+    <button class="btn btn-primary" type="submit">Add</button>
 </form>
 
-<ul>
-{% for task in tasks %}
-    <li>
-        {% if task.completed %}
-            <s>{{ task.content }}</s>
-        {% else %}
-            {{ task.content }}
-        {% endif %}
-
-        <form method="post" action="{{ url_for('main.toggle_task', task_id=task.id) }}" style="display:inline;">
-            <button type="submit">✅</button>
-        </form>
-
-        <form method="post" action="{{ url_for('main.delete_task', task_id=task.id) }}" style="display:inline;">
-            <button type="submit">🗑</button>
-        </form>
-    </li>
-{% endfor %}
+<ul class="list-group">
+    {% for task in tasks %}
+        <li class="list-group-item d-flex justify-content-between align-items-center {% if task.completed %}list-group-item-success{% endif %}">
+            <span>
+                {% if task.completed %}
+                    <s>{{ task.content }}</s>
+                {% else %}
+                    {{ task.content }}
+                {% endif %}
+            </span>
+            <div>
+                <form method="POST" action="{{ url_for('main.toggle_task', task_id=task.id) }}" class="d-inline">
+                    <button class="btn btn-sm btn-outline-success" type="submit">
+                        {% if task.completed %}Undo{% else %}Done{% endif %}
+                    </button>
+                </form>
+                <form method="POST" action="{{ url_for('main.delete_task', task_id=task.id) }}" class="d-inline">
+                    <button class="btn btn-sm btn-outline-danger" type="submit">Delete</button>
+                </form>
+            </div>
+        </li>
+    {% endfor %}
 </ul>
+{% endblock %}
