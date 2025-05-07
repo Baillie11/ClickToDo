@@ -97,3 +97,18 @@ def delete_task(task_id):
     db.session.delete(task)
     db.session.commit()
     return redirect(url_for('main.dashboard'))
+
+@main.route('/edit/<int:task_id>', methods=['POST'])
+@login_required
+def edit_task(task_id):
+    task = Task.query.get_or_404(task_id)
+    if task.user_id != current_user.id:
+        abort(403)
+
+    new_content = request.form.get('new_content')
+    if new_content:
+        task.content = new_content
+        db.session.commit()
+        flash('Task updated.')
+
+    return redirect(url_for('main.dashboard'))

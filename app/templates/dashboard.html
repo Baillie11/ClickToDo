@@ -1,35 +1,78 @@
 {% extends "base.html" %}
 {% block content %}
-<a href="{{ url_for('main.logout') }}" class="btn btn-outline-secondary btn-sm float-end mb-3">Logout</a>
 
 <h2 class="mb-4">Welcome, {{ current_user.full_name }}!</h2>
 
-<form method="POST" action="{{ url_for('main.add_task') }}" class="input-group mb-3">
-    <input type="text" name="content" class="form-control" placeholder="Add a new task" required>
-    <button class="btn btn-primary" type="submit">Add</button>
+<!-- Add Task -->
+<form method="POST" action="{{ url_for('main.add_task') }}" class="mb-4 d-flex">
+  <input type="text" name="content" class="form-control me-2" placeholder="New task..." required>
+  <button type="submit" class="btn btn-success">Add</button>
 </form>
 
-<ul class="list-group">
-    {% for task in tasks %}
-        <li class="list-group-item d-flex justify-content-between align-items-center {% if task.completed %}list-group-item-success{% endif %}">
-            <span>
-                {% if task.completed %}
-                    <s>{{ task.content }}</s>
-                {% else %}
-                    {{ task.content }}
-                {% endif %}
-            </span>
-            <div>
-                <form method="POST" action="{{ url_for('main.toggle_task', task_id=task.id) }}" class="d-inline">
-                    <button class="btn btn-sm btn-outline-success" type="submit">
-                        {% if task.completed %}Undo{% else %}Done{% endif %}
-                    </button>
-                </form>
-                <form method="POST" action="{{ url_for('main.delete_task', task_id=task.id) }}" class="d-inline">
-                    <button class="btn btn-sm btn-outline-danger" type="submit">Delete</button>
-                </form>
-            </div>
-        </li>
-    {% endfor %}
-</ul>
+<!-- Task List -->
+{% for task in tasks %}
+<div class="card mb-3 p-3">
+  <!-- Task Display -->
+  <div id="task-view-{{ task.id }}" class="d-flex justify-content-between align-items-center">
+    <div class="flex-grow-1">
+      <form method="POST" action="{{ url_for('main.toggle_task', task_id=task.id) }}" class="d-inline">
+        <button type="submit" class="btn btn-sm btn-outline-success me-2">
+          {% if task.completed %}✓{% else %}✗{% endif %}
+        </button>
+      </form>
+      <span {% if task.completed %}style="text-decoration: line-through;"{% endif %}>
+        {{ task.content }}
+      </span>
+    </div>
+    <div class="d-flex">
+      <button class="btn btn-sm btn-warning me-2 edit-btn" 
+              data-task-id="{{ task.id }}" 
+              data-task-content="{{ task.content | e }}">
+        Edit
+      </button>
+      <form method="POST" action="{{ url_for('main.delete_task', task_id=task.id) }}" class="d-inline">
+        <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Edit Form -->
+  <form method="POST" action="{{ url_for('main.edit_task', task_id=task.id) }}" id="edit-form-{{ task.id }}" class="d-none mt-2 d-flex">
+    <input type="text" name="new_content" class="form-control me-2" id="edit-input-{{ task.id }}" required>
+    <button type="submit" class="btn btn-sm btn-success me-2">Save</button>
+    <button type="button" class="btn btn-sm btn-secondary cancel-btn" data-task-id="{{ task.id }}">Cancel</button>
+  </form>
+</div>
+{% else %}
+<p class="text-muted">No tasks yet.</p>
+{% endfor %}
+
+<!-- External JS (no inline!) -->
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const editButtons = document.querySelectorAll('.edit-btn');
+    const cancelButtons = document.querySelectorAll('.cancel-btn');
+
+    editButtons.forEach(button => {
+      button.addEventListener('click', function () {
+        const id = this.dataset.taskId;
+        const content = this.dataset.taskContent;
+
+        document.getElementById('task-view-' + id).classList.add('d-none');
+        document.getElementById('edit-form-' + id).classList.remove('d-none');
+        document.getElementById('edit-input-' + id).value = content;
+      });
+    });
+
+    cancelButtons.forEach(button => {
+      button.addEventListener('click', function () {
+        const id = this.dataset.taskId;
+
+        document.getElementById('edit-form-' + id).classList.add('d-none');
+        document.getElementById('task-view-' + id).classList.remove('d-none');
+      });
+    });
+  });
+</script>
+
 {% endblock %}
